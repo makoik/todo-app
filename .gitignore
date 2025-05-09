@@ -1,0 +1,11 @@
+# Backend
+/api/node_modules
+/api/*.sqlite
+
+# Frontend
+/frontend/node_modules
+/frontend/build
+
+# System
+.DS_Store
+.env
