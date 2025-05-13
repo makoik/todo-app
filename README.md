@@ -31,7 +31,7 @@ A simple full-stack Todo List application built with:
 git clone https://github.com/makoik/todo-app.git
 
 # Navigate into the project directory
-cd todo-app
+cd todo-app/api
 
 # Install dependencies
 npm install
@@ -39,7 +39,8 @@ npm install
 # Start the backend server
 node index.js
 
-# In a separate terminal, start the frontend (if using something like Vite or CRA)
+# In a separate terminal, start the frontend
+cd todo-app/frontend
 npm run dev
 
 Folder Structure
