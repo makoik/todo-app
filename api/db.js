@@ -32,6 +32,16 @@ function getTodos(filter = {}, callback) {
         params.push(filter.date);
     }
 
+    if (filter.task) {
+        conditions.push('task LIKE ?');
+        params.push(`%${filter.task}`);
+    }
+
+    if (filter.updated_at) {
+        conditions.push('DATE(updated_at) = DATE(?)');
+        params.push(filter.updated_at);
+    }
+
     if (conditions.length > 0) {
         sql += ' WHERE ' + conditions.join(' AND ');
     }

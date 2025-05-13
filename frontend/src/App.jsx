@@ -1,12 +1,9 @@
-// src/App.jsx
 import React from 'react';
-import './App.css';
 import TodoList from './components/TodoList';
 
 function App() {
   return (
-    <div className='App' style={{ padding: '2rem' }}>
-      <h1>My Todo App</h1>
+    <div className="min-h-screen flex items-center justify-center bg-zinc-800 text-gray-100 p-4">
       <TodoList />
     </div>
   );

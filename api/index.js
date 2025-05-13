@@ -10,10 +10,11 @@ app.use(express.json());
 
 // GET
 app.get('/todos', async (req, res) => {
-  const { completed, date, sort_by, order } = req.query;
+  const { completed, date, task, updated_at, sort_by, order } = req.query;
 
   const allowedSortFields = ['task', 'completed', 'created_at', 'updated_at'];
   const allowedOrder = ['ASC', 'DESC'];
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
   let conditions = [];
   let params = [];
@@ -27,12 +28,27 @@ app.get('/todos', async (req, res) => {
   }
 
   if (date) {
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(date)) {
       return res.status(400).json({ error: 'date must be in YYYY-MM-DD format' });
     }
     conditions.push('DATE(created_at) = DATE(?)');
     params.push(date);
+  }
+
+  if (updated_at) {
+    if (!dateRegex.test(updated_at)) {
+      return res.status(400).json({ error: 'updated_at needs to be in YYYY-MM-DD format' });
+    }
+    conditions.push('DATE(updated_at) = DATE(?)');
+    params.push(updated_at);
+  }
+
+  if (task) {
+    if (typeof task !== 'string') {
+      return res.status(400).json({ error: 'task must a string' });
+    }
+    conditions.push('task LIKE ?');
+    params.push(`%${task}%`);
   }
 
   let sql = 'SELECT * FROM todos';

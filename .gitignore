@@ -1,10 +1,12 @@
 # Backend
 /api/node_modules
 /api/*.sqlite
+/api/.env
 
 # Frontend
 /frontend/node_modules
 /frontend/build
+/frontend/dist
 
 # System
 .DS_Store

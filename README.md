@@ -1,20 +1,56 @@
-# Todo App
+# Todo List App 📝
 
-A full-stack todo list app with:
+A simple full-stack Todo List application built with:
 
-- ✅ Backend (`/api`) – Node.js, Express, SQLite
-- 🎨 Frontend (`/frontend`) – React
+- **Frontend**: React + Tailwind CSS
+- **Backend**: Node.js + Express.js
+- **Database**: SQLite (via `better-sqlite3`)
 
-## Running the app
+---
 
-### API (Backend)
-```bash
-cd api
+## Features
+
+- Add, edit, and delete tasks
+- Mark tasks as completed
+- Sort and filter tasks by various fields
+- Track task creation and update timestamps
+- Confirm before deleting a task
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js and npm installed
+
+### Installation
+
+
+# Clone the repository
+git clone https://github.com/makoik/todo-app.git
+
+# Navigate into the project directory
+cd todo-app
+
+# Install dependencies
 npm install
+
+# Start the backend server
 node index.js
-```
 
-### Frontend
-cd frontend
-npm install
-npm start
+# In a separate terminal, start the frontend (if using something like Vite or CRA)
+npm run dev
+
+Folder Structure
+
+├── api/
+│   ├── db.js
+│   └── index.js
+├── frontend/
+│   ├── components/
+│   └── App.jsx
+│   └── main.jsx
+├── public/
+├── package.json
+└── README.md
