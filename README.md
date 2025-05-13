@@ -42,16 +42,3 @@ node index.js
 # In a separate terminal, start the frontend
 cd todo-app/frontend
 npm run dev
-
-Folder Structure
-
-├── api/
-│   ├── db.js
-│   └── index.js
-├── frontend/
-│   ├── components/
-│   └── App.jsx
-│   └── main.jsx
-├── public/
-├── package.json
-└── README.md
