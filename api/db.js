@@ -1,121 +1,159 @@
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./todo.db');
+const { Pool } = require('pg');
+const dbConfig = require('./dbConfig');
+const pool = new Pool(dbConfig);
 
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS todos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        task TEXT NOT null,
-        completed INTEGER DEFAULT 0,
-        created_at TEXT
-    )`);
+async function setupDatabase() {
+    try {
+        await pool.query(`
+                CREATE TABLE IF NOT EXISTS todos (
+                    id SERIAL PRIMARY KEY,
+                    task TEXT NOT NULL,
+                    completed BOOLEAN DEFAULT false,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                `);
+            
+            const result = await pool.query(`
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = 'todos' AND column_name = 'updated_at'
+                `);
 
-    db.run(`ALTER TABLE todos ADD COLUMN updated_at TEXT`, err => {
-        if (err && !err.message.includes('duplicate column name')) {
-            console.error('Error adding updated_at column: ', err.message);
+            if (result.rows.length === 0) {
+                await pool.query('ALTER TABLE todos ADD COLUMN updated_at TIMESTAMP');
+            }
+        } catch (err) {
+            console.error('Error setting up the database:', err.message);
         }
-    });
-});
+    }
+setupDatabase();
 
 // Get all to-do's
-function getTodos(filter = {}, callback) {
-    let sql = 'SELECT * FROM todos';
-    const params = [];
+async function getTodos(filter = {}) {
     const conditions = [];
+    const params = [];
 
     if (filter.completed !== undefined) {
-        conditions.push('completed = ?');
-        params.push(filter.completed ? 1 : 0);
+        conditions.push(`completed = $${params.lenght + 1}`);
+        params.push(filter.completed);
     }
 
     if (filter.date) {
-        conditions.push('DATE(created_at) = DATE(?)');
+        conditions.push(`DATE(created_at) = DATE($${params.length + 1})`);
         params.push(filter.date);
     }
 
     if (filter.task) {
-        conditions.push('task LIKE ?');
-        params.push(`%${filter.task}`);
+        conditions.push(`task ILIKE $${params.length + 1}`); // ILIKE handles case-insensitive search
+        params.push(`%${filter.task}%`);
     }
 
     if (filter.updated_at) {
-        conditions.push('DATE(updated_at) = DATE(?)');
+        conditions.push(`DATE(updated_at) = DATE($${params.length + 1})`);
         params.push(filter.updated_at);
-    }
-
-    if (conditions.length > 0) {
-        sql += ' WHERE ' + conditions.join(' AND ');
     }
 
     const allowedSortFields = ['task', 'completed', 'created_at', 'updated_at'];
     const allowedOrder = ['ASC', 'DESC'];
-    
-    // default sort values
-    let sortField = allowedSortFields.includes(filter.sort_by) ? filter.sort_by : 'created_at';
-    let sortOrder = allowedOrder.includes(filter.order?.toUpperCase()) ? filter.order.toUpperCase() : 'ASC';
-  
+
+    const sortField = allowedSortFields.includes(filter.sort_by) ? filter.sort_by : 'created_at';
+    const sortOrder = allowedOrder.includes(filter.order?.toUpperCase()) ? filter.order.toUpperCase() : 'ASC';
+
+    let sql = 'SELECT * FROM todos';
+    if (conditions.length > 0) {
+        sql += ' WHERE ' + conditions.join(' AND ');
+    }
+
     sql += ` ORDER BY ${sortField} ${sortOrder}`;
 
-    db.all(sql, params, callback);
+    try {
+        const result = await pool.query(sql, params);
+        return result.rows;
+    } catch (err) {
+        console.error('Error fetching todos:', err.message);
+        throw err;
+    }
 }
 
-// Add a new to-do
-function createTodo(task, completed, callback) {
+async function createTodo(task, completed) {
     const timestamp = new Date().toISOString();
-    const completedInt = completed ? 1 : 0;
-    console.log(`Inserting todo:`, { task, completedInt });
-    db.run('INSERT INTO todos (task, completed, created_at, updated_at) VALUES (?, ?, ?, ?)', [task, completedInt, timestamp, timestamp], function(err) {
-        if (err) {
-            console.error('Error inserting todo:', err.message);
-            return callback(err);
-        }
-        callback(null, { id: this.lastID, task, completed: completedInt, created_at: timestamp, updated_at: timestamp });
-    });
+
+    console.log(`Inserting todo:`, { task, completed });
+    const sql = `
+        INSERT INTO todos (task, completed, created_at, updated_at)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, task, completed, created_at, updated_at
+        `;
+
+    const params = [task, completed, timestamp, timestamp];
+
+    try {
+        const result = await pool.query(sql, params);
+        return result.rows[0];
+    } catch (err) {
+        console.error('Error inserting todo:', err.message);
+        throw err;
+    }
 }
 
-function updateTodo(id, updatedFields, callback) {
+async function updateTodo(id, updatedFields) {
     const { task, completed } = updatedFields;
     const timestamp = new Date().toISOString();
 
-    // Dynamic query parts
     const updates = [];
     const values = [];
+    let index = 1;
 
     if (task !== undefined) {
-        updates.push('task = ?');
+        updates.push(`task = $${index++}`);
         values.push(task);
     }
 
     if (completed !== undefined) {
-        updates.push('completed = ?');
-        values.push(completed ? 1 : 0); // Forces a boolean to integer (SQLite handles booleans only as integers)
+        updates.push(`completed = $${index++}`);
+        values.push(completed);
     }
 
     if (updates.length === 0) {
-        return callback(new Error('No fields provided to update'));
+        throw new Error('No fields provided to update');
     }
 
-    updates.push('updated_at = ?');
+    updates.push(`updated_at = $${index++}`);
     values.push(timestamp);
     values.push(id); // for WHERE clause
 
-    const sql = `UPDATE todos SET ${updates.join(', ')} WHERE id = ?`;
+    const sql = `
+        UPDATE todos 
+        SET ${updates.join(', ')} 
+        WHERE id = $${index}
+        RETURNING id, task, completed, created_at, updated_at
+        `;
 
-    db.run(sql, values, function(err) {
-        if (err) return callback(err);
-        callback(null, { id, ...updatedFields, updated_at: timestamp });
-    });
+    try {
+        const result = await pool.query(sql, values);
+        return result.rows[0];
+    } catch (err) {
+        console.error('Error updating todo:', err.message);
+        throw err;
+    }
 }
 
-function deleteTodo(id, callback) {
-    db.run('DELETE FROM todos WHERE id = ?', [id], function(err) {
-        if (err) return callback(err);
-        callback(null, { deleted: this.changes > 0 });
-    });
-}
+async function deleteTodo(id) {
+    try {
+        const result = await pool.query(
+            'DELETE FROM todos WHERE id = $1 RETURNING id',
+            [id]
+        );
 
+        return { deleted: result.rowCount > 0 };
+    } catch (err) {
+        console.error('Error deleting todo:', err.message);
+        throw err;
+    }
+}
 
 module.exports = {
-    db,
+    pool,
     getTodos,
     createTodo,
     updateTodo,

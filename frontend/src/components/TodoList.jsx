@@ -83,20 +83,25 @@ function TodoList() {
   const handleAddTodo = async () => {
     if (!newTask.trim()) return;
 
-    await fetch('http://localhost:3000/todos', {
-      method: 'POST',
-      headers: { 'Content-type': 'application/json' },
-      body: JSON.stringify({ task: newTask })
-    })
-    .then(res => res.json())
-    .then(() => {
-      setNewTask('');
-      fetchTodos(); // refreshes the list
-    })
-    .catch(err => {
-        console.error('Error adding todos:', err);
-        setErrorMsg('Failed to add todo. Please try again.');
+    try {
+      const res = await fetch('http://localhost:3000/todos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task: newTask })
       });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Unknown error');
+      }
+
+      setNewTask('');
+      fetchTodos(); // Refresh the list
+    } catch (err) {
+      console.error('Error adding todo:', err);
+      setErrorMsg('Failed to add todo. Please try again.');
+    }
   };
 
   const handleFilterSubmit = () => {

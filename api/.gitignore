@@ -1,5 +1,6 @@
 # .gitignore
 todo.db
+dbConfig.js
 node_modules/
 .env
 *.log

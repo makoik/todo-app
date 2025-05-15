@@ -1,10 +1,10 @@
 # Todo List App 📝
 
-A simple full-stack Todo List application built with:
+A full-stack Todo List application with filtering, sorting, and timestamp tracking.
 
 - **Frontend**: React + Tailwind CSS
 - **Backend**: Node.js + Express.js
-- **Database**: SQLite (via `better-sqlite3`)
+- **Database**: ~~SQLite~~ → PostgreSQL
 
 ---
 
@@ -12,9 +12,10 @@ A simple full-stack Todo List application built with:
 
 - Add, edit, and delete tasks
 - Mark tasks as completed
-- Sort and filter tasks by various fields
-- Track task creation and update timestamps
-- Confirm before deleting a task
+- Sort and filter by task, completion, created/updated date
+- Tracks `created_at` and `updated_at` timestamps
+- Simple confirmation before deleting a task
+- Fully responsive dark-themed UI
 
 ---
 
@@ -23,34 +24,44 @@ A simple full-stack Todo List application built with:
 ### Prerequisites
 
 - Node.js and npm installed
+- PostgreSQL installed and running
+
+---
 
 ### Installation
 
-
+```bash
 # Clone the repository
 git clone https://github.com/makoik/todo-app.git
 
-# Navigate into the project directory
+# Navigate to the project root
 cd todo-app
 
-# Install dependencies
+# Install backend dependencies
+cd api
 npm install
 
-# Start the backend server
+# Create dbConfig.js in api/:
+
+// dbConfig.js
+module.exports = {
+  user: 'your_username',
+  host: 'localhost',
+  database: 'todo_app',
+  password: 'your_password',
+  port: 5432,
+};
+
+# Be sure the database todo_app exists. You can create it with:
+
+psql -U postgres
+CREATE DATABASE todo_app;
+
+
+# Start backend (in /api)
 node index.js
 
-# In a separate terminal, start the frontend (if using something like Vite or CRA)
+# Open a new terminal and start frontend (in /frontend)
+cd ../frontend
+npm install
 npm run dev
-
-Folder Structure
-
-├── api/
-│   ├── db.js
-│   └── index.js
-├── frontend/
-│   ├── components/
-│   └── App.jsx
-│   └── main.jsx
-├── public/
-├── package.json
-└── README.md
