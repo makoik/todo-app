@@ -1,3 +1,6 @@
+# db
+node_modules/
+
 # Backend
 /api/node_modules
 /api/*.sqlite
