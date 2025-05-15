@@ -50,7 +50,7 @@ module.exports = {
   database: 'todo_app',
   password: 'your_password',
   port: 5432,
-...};
+};
 
 # Be sure the database todo_app exists. You can create it with:
 
