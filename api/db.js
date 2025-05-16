@@ -34,7 +34,7 @@ async function getTodos(filter = {}) {
     const params = [];
 
     if (filter.completed !== undefined) {
-        conditions.push(`completed = $${params.lenght + 1}`);
+        conditions.push(`completed = $${params.length + 1}`);
         params.push(filter.completed);
     }
 

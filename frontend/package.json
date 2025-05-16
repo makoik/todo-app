@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:dev": "electron .",
+    "electron:build": "npm run build && electron-builder"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.6",
@@ -27,5 +29,25 @@
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.6",
     "vite": "^6.3.5"
+  },
+  "main": "main.js",
+  "build": {
+    "appId": "com.yourname.todoapp",
+    "productName": "TodoApp",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist",
+      "main.js",
+      "node_modules"
+    ],
+    "extraResources": [
+      {
+        "from": "../api",
+        "to": "api"
+      }
+    ],
+    "asar": true
   }
 }

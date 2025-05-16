@@ -1,15 +1,14 @@
-# db
-node_modules/
-
-# Backend
+**/build/
 /api/node_modules
-/api/*.sqlite
+/api/dbConfig.js
+/api/*.log
 /api/.env
-
-# Frontend
 /frontend/node_modules
-/frontend/build
 /frontend/dist
+/electron/build/
+/electron/node_modules
+/python-cli/todo-app.spec
+/python-cli/todo-app-rebuilder.bat
 
 # System
 .DS_Store

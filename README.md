@@ -1,10 +1,15 @@
 # Todo List App 📝
 
-A full-stack Todo List application with filtering, sorting, and timestamp tracking.
 
-- **Frontend**: React + Tailwind CSS
+
+A full-stack local Todo List application with filtering, sorting, and timestamp tracking.  
+Originally built with SQLite, now upgraded to PostgreSQL and enhanced with a local desktop GUI using Electron.
+
+- **Frontend**: React (Vite) + Tailwind CSS
 - **Backend**: Node.js + Express.js
-- **Database**: ~~SQLite~~ → PostgreSQL
+- **Database**: PostgreSQL
+- **Desktop App**: Electron (optional)
+- **CLI (Legacy/Optional)**: Python + Rich + Typer
 
 ---
 
@@ -12,14 +17,25 @@ A full-stack Todo List application with filtering, sorting, and timestamp tracki
 
 - Add, edit, and delete tasks
 - Mark tasks as completed
-- Sort and filter by task, completion, created/updated date
-- Tracks `created_at` and `updated_at` timestamps
-- Simple confirmation before deleting a task
-- Fully responsive dark-themed UI
+- Sort and filter tasks
+- Track created_at and updated_at
+- Responsive dark UI (Tailwind)
+- Desktop version via Electron (optional)
 
 ---
 
 ## Getting Started
+
+## 📁 Project Structure
+
+```bash
+todo-app/
+├── api/                # Node.js backend (Express + PostgreSQL)
+├── frontend/           # React frontend (Vite + TailwindCSS)
+├── electron/           # Electron wrapper for local desktop app
+└── python-cli/         # Legacy CLI interface (optional)
+    └── todo-app.bat    # Quick launcher for local dev (optional)
+```
 
 ### Prerequisites
 
@@ -31,17 +47,17 @@ A full-stack Todo List application with filtering, sorting, and timestamp tracki
 ### Installation
 
 ```bash
-# Clone the repository
+## Clone the repository
 git clone https://github.com/makoik/todo-app.git
 
-# Navigate to the project root
+## Navigate to the project root
 cd todo-app
 
-# Install backend dependencies
+## Set up the backend
 cd api
 npm install
 
-# Create dbConfig.js in api/:
+## Create api/dbConfig.js with your PostgreSQL credentials:
 
 // dbConfig.js
 module.exports = {
@@ -52,16 +68,37 @@ module.exports = {
   port: 5432,
 ...};
 
-# Be sure the database todo_app exists. You can create it with:
+## Be sure the database todo_app exists. You can create it with:
 
 psql -U postgres
 CREATE DATABASE todo_app;
 
 
-# Start backend (in /api)
+## Start backend (in /api)
+cd api
 node index.js
 
-# Open a new terminal and start frontend (in /frontend)
+## Open a new terminal and start frontend (in /frontend)
 cd ../frontend
 npm install
 npm run dev
+
+
+# Running as Desktop App (Electron) — Optional
+## Database still must be running separately
+
+## Build the frontend
+cd frontend
+npm run build
+
+## Run Electron
+cd ../electron
+npm install
+npm start
+
+
+# Optional: Python CLI
+## If you're curious about running this from the terminal:
+cd python-cli
+pip install -r requirements.txt
+python todo_cli.py

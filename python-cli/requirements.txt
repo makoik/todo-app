@@ -1,0 +1,9 @@
+typer[all]
+rich
+questionary
+python-dotenv
+requests
+
+
+# Run this to install:
+pip install -r requirements.txt
