@@ -10,6 +10,7 @@ Originally built with SQLite, now upgraded to PostgreSQL and enhanced with a loc
 - **Database**: PostgreSQL
 - **Desktop App**: Electron (optional)
 - **CLI (Legacy/Optional)**: Python + Rich + Typer
+- **Standalone Version**: Electron + React Desktop App
 
 ---
 
