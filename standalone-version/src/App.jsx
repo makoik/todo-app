@@ -30,9 +30,23 @@ function App() {
   useEffect(() => {
     if (window.electronAPI?.getTasks) {
       window.electronAPI.getTasks().then(setTasks);
-    } else {
+    } /* else {
       console.log("Running in browser (dev mode), skipping Electron data load.");
       setTasks([]); // Mock data
+    } */
+  }, []);
+
+useEffect(() => {
+  
+  // Test the IPC call directly
+  if (window.electronAPI?.getTasks) {
+    window.electronAPI.getTasks()
+      .then(data => { 
+        setTasks(data);
+      })
+      .catch(err => console.error('getTasks error:', err));
+  } else {
+    console.log('electronAPI.getTasks not available');
     }
   }, []);
 
@@ -99,8 +113,10 @@ function App() {
     setNewTask('');
     setNewDetails('');
     setShowDetailsInput(false);
-    window.electronAPI.saveTasks(updated);
-  };
+    if (window.electronAPI?.saveTasks) {
+      window.electronAPI.saveTasks(updated);
+}
+    };
 
   // Task details
   const toggleDetails = (id) => {
@@ -115,7 +131,9 @@ function App() {
       t.id === id ? { ...t, completed: !t.completed, updated_at: new Date().toLocaleString() } : t
     );
     setTasks(updated);
-    window.electronAPI.saveTasks(updated);
+    if (window.electronAPI?.saveTasks) {
+      window.electronAPI.saveTasks(updated);
+    }
   };
 
   // Edit task & details
@@ -137,7 +155,7 @@ function App() {
   setEditDetails(task.details || ''); // task details, default to empty string
   setExpandedIds((prev) => prev.filter((x) => x !== task.id));
   };
-
+  
   const newTaskInputRef = useRef(null);
   // Delete task
   const deleteTask = async (id) => {
@@ -149,11 +167,13 @@ function App() {
       if (editId === id) setEditId(null);
       setExpandedIds((prev) => prev.filter((x) => x !== id));
 
-      window.electronAPI.saveTasks(updated);
+      if (window.electronAPI?.saveTasks) {
+        window.electronAPI.saveTasks(updated);
+      }
 
       setTimeout(() => {
         newTaskInputRef.current?.focus({ preventScroll: true });
-      })
+      }, 50)
     }
   };
 

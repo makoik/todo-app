@@ -2,7 +2,20 @@ const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-const dataFilePath = path.join(__dirname, '/data/', 'tabledata.json');
+// Determine base data directory depending on build mode
+let dataDir;
+
+if (process.env.PORTABLE_EXECUTABLE_DIR) {
+  // Correct for portable mode
+  dataDir = path.join(process.env.PORTABLE_EXECUTABLE_DIR, 'data');
+} else {
+  const isDev = !app.isPackaged;
+  dataDir = isDev
+    ? path.join(__dirname, 'data')                         // dev mode
+    : path.join(process.resourcesPath, 'data');            // installed build    
+  }
+
+const dataFilePath = path.join(dataDir, 'tabledata.json');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -10,14 +23,14 @@ function createWindow() {
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true, // Only if not using preload.js
+      contextIsolation: true,
       enableRemoteModule: false,
-      nodeIntegration: false,  // Only if you trust your code
+      nodeIntegration: false,
     }
   });
-  
-  // win.loadURL('http://localhost:5173');
   win.loadFile(path.join(__dirname, 'build/index.html'));
+  // debugging
+  // win.loadURL('http://localhost:5173');
   // win.webContents.openDevTools();
 }
 
@@ -41,9 +54,11 @@ ipcMain.handle('get-tasks', async () => {
 ipcMain.handle('save-tasks', async (_event, tasks) => {
   try {
     fs.writeFileSync(dataFilePath, JSON.stringify(tasks, null, 2));
+
     return { success: true };
   } catch (err) {
     console.error('Error saving tasks:', err);
+
     return { success: false, error: err.message };
   }
 });

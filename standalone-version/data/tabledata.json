@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "id": 1748342746284,
+    "task": "Sample",
+    "completed": false,
+    "details": "Sample Detail",
+    "created_at": "27/05/2025, 13:45:46",
+    "updated_at": "27/05/2025, 13:45:56"
+  }
+]
