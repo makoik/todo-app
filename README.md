@@ -1,4 +1,4 @@
-# Todo List App 📝
+# Hobby/Practice Project Todo List App 📝
 
 
 
