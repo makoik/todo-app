@@ -214,7 +214,12 @@ function App() {
             placeholder="Add task..."
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
-            onEnter={addTask}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addTask();
+              }
+            }}
           />
           <button onClick={addTask} className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded">
             Add
