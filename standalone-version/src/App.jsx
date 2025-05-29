@@ -291,8 +291,6 @@ function App() {
                     <option value="task">Task Name</option>
                     <option value="created_at">Created At</option>
                     <option value="updated_at">Updated At</option>
-                    <option value="completed">Completed</option>
-                    <option value="hasDetails">Has Details</option>
                   </select>
                 </div>
                 <div className="grid grid-cols-[auto_1fr] items-center gap-2">
