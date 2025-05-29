@@ -1,10 +1,10 @@
 [
   {
-    "id": 1748342746284,
+    "id": 1748432232154,
     "task": "Sample",
     "completed": false,
-    "details": "Sample Detail",
-    "created_at": "27/05/2025, 13:45:46",
-    "updated_at": "27/05/2025, 13:45:56"
+    "details": "A\nReally\nLong\nDetail",
+    "created_at": "28/05/2025, 14:37:12",
+    "updated_at": "29/05/2025, 10:05:51"
   }
 ]

@@ -1,5 +1,41 @@
 import { useEffect, useState, useRef } from 'react';
 
+function AutoExpandTextArea({ value, onChange, placeholder, isEditing, onEnter, onShiftEnter }) {
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  }, [value]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        if (onShiftEnter) onShiftEnter(e);
+      } else {
+        e.preventDefault();
+        if (onEnter) onEnter(e);
+      }
+    }
+  };
+
+  return (
+    <textarea
+      ref={textareaRef}
+      value={value}
+      onChange={onChange}
+      onKeyDown={handleKeyDown}
+      placeholder={placeholder}
+      rows={1}
+      className={`p-2 rounded text-white w-full mb-3 ${isEditing ? 'bg-zinc-600' : 'bg-zinc-700'}`}
+      style={{ overflow: 'hidden' }}
+    />
+  );
+}
+
 function App() {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -34,20 +70,6 @@ function App() {
       console.log("Running in browser (dev mode), skipping Electron data load.");
       setTasks([]); // Mock data
     } */
-  }, []);
-
-useEffect(() => {
-  
-  // Test the IPC call directly
-  if (window.electronAPI?.getTasks) {
-    window.electronAPI.getTasks()
-      .then(data => { 
-        setTasks(data);
-      })
-      .catch(err => console.error('getTasks error:', err));
-  } else {
-    console.log('electronAPI.getTasks not available');
-    }
   }, []);
 
   // Apply filters and sorting
@@ -115,8 +137,8 @@ useEffect(() => {
     setShowDetailsInput(false);
     if (window.electronAPI?.saveTasks) {
       window.electronAPI.saveTasks(updated);
-}
-    };
+    }
+  };
 
   // Task details
   const toggleDetails = (id) => {
@@ -151,8 +173,8 @@ useEffect(() => {
 
   const handleEditClick = (task) => {
   setEditId(task.id);
-  setEditValue(task.task);         // task name
-  setEditDetails(task.details || ''); // task details, default to empty string
+  setEditValue(task.task);
+  setEditDetails(task.details || '');
   setExpandedIds((prev) => prev.filter((x) => x !== task.id));
   };
   
@@ -192,7 +214,7 @@ useEffect(() => {
             placeholder="Add task..."
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addTask()}
+            onEnter={addTask}
           />
           <button onClick={addTask} className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded">
             Add
@@ -210,11 +232,13 @@ useEffect(() => {
           </button>
 
           {showDetailsInput && (
-            <input
-              className="bg-zinc-700 p-2 rounded text-white w-full mb-3"
-              placeholder="Optional details..."
+            <AutoExpandTextArea
               value={newDetails}
               onChange={(e) => setNewDetails(e.target.value)}
+              placeholder="Optional details..."
+              isEditing={false}
+              onEnter={addTask}
+              onShiftEnter={{} = {}}
             />
           )}
         </div>
@@ -310,8 +334,17 @@ useEffect(() => {
                     className="bg-zinc-600 p-2 rounded w-full text-white mb-1"
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (editValue.trim()) {
+                          editTask(task.id, editValue, editDetails);
+                        }
+                        setEditId(null);
+                        setExpandedIds((prev) => prev.filter((x) => x !== task.id));
+                      }
+                    }}
                   />
-                  {/* Details toggle - always visible (like normal view) */}
+                  {/* Details toggle */}
                     <button
                       className="text-xs text-white mt-1 hover:underline flex items-center gap-1 self-start"
                       onClick={() => toggleDetails(task.id)}
@@ -322,14 +355,21 @@ useEffect(() => {
                       </span>
                     </button>
 
-                    {/* Details input - show when expanded (like details content in normal view) */}
+                    {/* Edit Details input - show when expanded */}
                     {expandedIds.includes(task.id) && (
-                      <input
-                        className="bg-zinc-600 p-2 rounded w-full text-white mt-1"
-                        placeholder="Enter task details..."
+                      <AutoExpandTextArea
                         value={editDetails}
                         onChange={(e) => setEditDetails(e.target.value)}
-
+                        placeholder="Enter task details..."
+                        isEditing={true}
+                        onEnter={() => {
+                          if (editValue.trim()) {
+                            editTask(task.id, editValue, editDetails);
+                          }
+                          setEditId(null);
+                          setExpandedIds((prev) => prev.filter((x) => x !== task.id));
+                        }}
+                        onShiftEnter={() => {}}
                       />
                     )}
                 </div>
@@ -384,7 +424,7 @@ useEffect(() => {
 
                   {/* Details content */}
                   {expandedIds.includes(task.id) && (
-                    <div className='text-sm text-gray-300 mt-2 whitespace-pre-wrap'>
+                    <div className='text-sm text-gray-300 mt-2 break-words whitespace-pre-wrap'>
                       {task.details}
                     </div>
                   )}
